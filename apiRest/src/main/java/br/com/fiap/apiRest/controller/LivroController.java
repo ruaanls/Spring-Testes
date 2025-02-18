@@ -20,6 +20,7 @@ public class LivroController
 {
     @Autowired
     private LivroRepository livroRepository;
+    @Autowired
     private LivroService service;
 
     @PostMapping
