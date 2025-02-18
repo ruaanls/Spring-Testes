@@ -1,5 +1,8 @@
 package br.com.fiap.apiRest.controller;
 
+import br.com.fiap.apiRest.DTO.LivroRequest;
+import br.com.fiap.apiRest.DTO.LivroResponse;
+import br.com.fiap.apiRest.Service.LivroService;
 import br.com.fiap.apiRest.model.Livro;
 import br.com.fiap.apiRest.repository.LivroRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,36 +20,49 @@ public class LivroController
 {
     @Autowired
     private LivroRepository livroRepository;
+    private LivroService service;
 
     @PostMapping
-    public ResponseEntity<Livro> createLivro(@RequestBody Livro livro){
-        Livro livroSalvo = livroRepository.save(livro);
+    public ResponseEntity<Livro> createLivro(@RequestBody LivroRequest livro){
+        LivroService serviceLivro = new LivroService();
+        Livro livroConvertido = serviceLivro.requestToLivro(livro);
+        Livro livroSalvo = livroRepository.save(livroConvertido);
         return new ResponseEntity<>(livroSalvo, HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<List<Livro>> getLivros()
+    public ResponseEntity<List<LivroResponse>> getLivros()
     {
         List<Livro> livros = livroRepository.findAll();
-        return new ResponseEntity<>(livros, HttpStatus.OK);
+        List<LivroResponse> listaLivros = new ArrayList<>();
+        for(Livro livro: livros)
+        {
+            listaLivros.add(service.livroToResponse(livro));
+        }
+        return new ResponseEntity<>(listaLivros, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
 
-    public ResponseEntity<Livro> livroByID(@PathVariable Long id)
+    public ResponseEntity<LivroResponse> livroByID(@PathVariable Long id)
     {
         Optional<Livro> livro = livroRepository.findById(id);
-        if(livro.isEmpty())
-        {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(livro.get(),HttpStatus.OK);
+        LivroResponse LivroResponse = service.livroOptionalToResponse(livro);
+
+        return new ResponseEntity<>(LivroResponse,HttpStatus.OK);
     }
 
-    @PutMapping
-    public ResponseEntity<Livro> updateLivro(@RequestBody Livro livro)
+    @PutMapping ("/{id}")
+    public ResponseEntity<Livro> updateLivro(@RequestBody Livro livroNovo, @PathVariable long id)
     {
-        Livro livroSalvo = livroRepository.save(livro);
+        Optional<Livro> livroVelho = livroRepository.findById(id);
+        if(livroVelho.isEmpty())
+        {
+            return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
+        }
+        livroNovo.setId(livroVelho.get().getId());
+        Livro livroSalvo = livroRepository.save(livroNovo);
+
         return new ResponseEntity<>(livroSalvo, HttpStatus.CREATED);
     }
 
