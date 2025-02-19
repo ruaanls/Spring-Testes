@@ -6,6 +6,8 @@ import br.com.fiap.apiRest.DTO.LivroResponse;
 import br.com.fiap.apiRest.model.Livro;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -16,6 +18,9 @@ public class LivroService
         Livro livro = new Livro();
         livro.setAutor(livroRequest.getAutor());
         livro.setTitulo(livroRequest.getTitulo());
+        livro.setPreco(livroRequest.getPreco());
+        livro.setCategoria(livroRequest.getCategoria());
+        livro.setIsbn(livroRequest.getIsbn());
         return livro;
     }
 
@@ -34,10 +39,14 @@ public class LivroService
 
     }
 
-    public LivroResponse livroOptionalToResponse(Optional<Livro> livro)
+    public List<LivroResponse> livrosToResponse(List<Livro> livros)
     {
-        LivroResponse LivroResponse = new LivroResponse(livro.get().getAutor()+" - "+livro.get().getAutor());
-        return LivroResponse;
+        List<LivroResponse> listaLivros = new ArrayList<>();
+        for(Livro livro: livros)
+        {
+            listaLivros.add(livroToResponse(livro));
+        }
+        return listaLivros;
 
     }
 
