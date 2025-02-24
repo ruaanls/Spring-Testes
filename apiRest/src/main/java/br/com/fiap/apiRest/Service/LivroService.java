@@ -4,6 +4,10 @@ import br.com.fiap.apiRest.DTO.LivroRequest;
 import br.com.fiap.apiRest.DTO.LivroRequestDTO;
 import br.com.fiap.apiRest.DTO.LivroResponse;
 import br.com.fiap.apiRest.model.Livro;
+import br.com.fiap.apiRest.repository.LivroRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -13,6 +17,8 @@ import java.util.Optional;
 @Service
 public class LivroService
 {
+    @Autowired
+    LivroRepository livroRepository;
     public Livro requestToLivro(LivroRequest livroRequest)
     {
         Livro livro = new Livro();
@@ -49,6 +55,12 @@ public class LivroService
         return listaLivros;
 
     }
+
+    public Page<LivroResponse> findall(Pageable pageable)
+    {
+        return livroRepository.findAll(pageable).map(livro -> livroToResponse(livro));
+    }
+
 
 
 }
