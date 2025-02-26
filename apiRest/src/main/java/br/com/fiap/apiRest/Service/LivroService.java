@@ -40,7 +40,7 @@ public class LivroService
 
     public LivroResponse livroToResponse(Livro livro)
     {
-        LivroResponse LivroResponse = new LivroResponse(livro.getTitulo()+" - "+livro.getAutor());
+        LivroResponse LivroResponse = new LivroResponse(livro.getId(),livro.getTitulo()+" - "+livro.getAutor());
         return LivroResponse;
 
     }

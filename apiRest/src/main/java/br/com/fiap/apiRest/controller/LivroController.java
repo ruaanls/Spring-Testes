@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @RestController
 @RequestMapping(value = "/livros")
 public class LivroController
@@ -37,10 +40,39 @@ public class LivroController
     }
 
     @GetMapping
-    public ResponseEntity<Page<LivroResponse>> getLivros()
+    public ResponseEntity<Page<LivroResponse>> getLivros(@RequestParam(defaultValue = "0") Integer pageNumber)
     {
 
-        Pageable pageable = PageRequest.of(0,2, Sort.by("titulo").ascending());
+        Pageable pageable = PageRequest.of(pageNumber,2, Sort.by("titulo").ascending());
+        Page<LivroResponse> livros = service.findall(pageable);
+        for(LivroResponse livro : livros)
+        {
+            livro.setLink(
+                    linkTo(
+                            methodOn(LivroController.class)
+                                    .livroByID(livro.getId())
+                    ).withSelfRel()
+            );
+        }
+        return new ResponseEntity<>(service.findall(pageable), HttpStatus.OK);
+    }
+
+
+    @GetMapping("/page/{id}")
+    public ResponseEntity<Page<LivroResponse>> getLivros2(@PathVariable int id)
+    {
+
+        Pageable pageable = PageRequest.of(id,2, Sort.by("titulo").ascending());
+        Page<LivroResponse> livros = service.findall(pageable);
+        for(LivroResponse livro : livros)
+        {
+            livro.setLink(
+                    linkTo(
+                            methodOn(LivroController.class)
+                                    .livroByID(livro.getId())
+                    ).withSelfRel()
+            );
+        }
 
         return new ResponseEntity<>(service.findall(pageable), HttpStatus.OK);
     }
@@ -55,6 +87,12 @@ public class LivroController
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         LivroResponse LivroResponse = service.livroToResponse(livroCapturado.get());
+        LivroResponse.setLink(
+                linkTo(
+                        methodOn(LivroController.class)
+                                .getLivros(0)
+                ).withRel("Todos os Livros")
+        );
 
         return new ResponseEntity<>(LivroResponse,HttpStatus.OK);
     }
